@@ -17,7 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<DocumentSnapshot> crimes;
+  Map<String, dynamic> mapCrimeSymbols = {};
   MapboxMapController mapController;
   CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -51,15 +51,16 @@ class _HomePageState extends State<HomePage> {
 
   _getCrimes() {
     crimesService.getCrimes().listen((snapshot) async {
-      crimes = snapshot.documents;
+      print("received data");
       _renderCrimes(snapshot.documents);
     });
   }
 
-  _renderCrimes(documents) async {
+  _renderCrimes(List<DocumentSnapshot> documents) async {
+    mapCrimeSymbols.clear();
     for (var crime in documents) {
-      GeoPoint location = crime['location'];
-      await mapController.addSymbol(
+      GeoPoint location = crime.data['location'];
+      final symbol = await mapController.addSymbol(
         SymbolOptions(
           iconImage: _getMarkerImage(
             crime['report_number'],
@@ -68,11 +69,11 @@ class _HomePageState extends State<HomePage> {
           geometry: LatLng(location?.latitude ?? 0, location?.longitude ?? 0),
           iconSize: 0.1,
         ),
-        {
-          "report_number": crime['report_number'],
-        },
       );
+
+      mapCrimeSymbols.addAll({symbol.id: crime.data['report_number']});
     }
+    setState(() {});
   }
 
   String _getMarkerImage(int reportNumber) {
@@ -93,11 +94,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   _onSymbolTapped(Symbol symbol) {
-    print(symbol.data['report_number']);
     Helper.notify(
       context,
       message:
-          "There were ${symbol.data['report_number']} crime(s) reported here.",
+          "There were ${mapCrimeSymbols[symbol.id]} crime(s) reported here.",
     );
   }
 
@@ -110,7 +110,7 @@ class _HomePageState extends State<HomePage> {
       trackCameraPosition: true,
       compassEnabled: true,
       zoomGesturesEnabled: true,
-      myLocationEnabled: true,
+      myLocationEnabled: false,
       myLocationRenderMode: MyLocationRenderMode.GPS,
     );
 
