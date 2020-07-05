@@ -5,8 +5,9 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 class CAppBar extends StatelessWidget with PreferredSizeWidget {
   final String title;
   final Widget searchbar;
+  final List<Widget> actions;
 
-  CAppBar({this.title, this.searchbar});
+  CAppBar({this.title, this.searchbar, this.actions});
 
   final double kheight = 120;
   @override
@@ -32,19 +33,25 @@ class CAppBar extends StatelessWidget with PreferredSizeWidget {
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.only(left: 12.0, right: 12.0, top: 6.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 24.0,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+              Row(
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 24.0,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Spacer(),
+                  if (actions != null) ...actions
+                ],
               ),
-              SizedBox(height: kheight * 0.15),
+              SizedBox(height: 5),
               if (searchbar != null) searchbar
             ],
           ),

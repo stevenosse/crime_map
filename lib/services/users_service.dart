@@ -9,6 +9,11 @@ class UsersService {
     return await _googleSignIn.isSignedIn();
   }
 
+  Future<bool> logoutUser() async {
+    await _googleSignIn.disconnect();
+    return true;
+  }
+
   Future<FirebaseUser> loginUser() async {
     try {
       final GoogleSignInAccount googleUser = await _googleSignIn.signIn();

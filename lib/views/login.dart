@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
               Text(
                 "CrimeMap",
                 style: TextStyle(
-                  fontSize: 24.0,
+                  fontSize: 32.0,
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).accentColor,
                 ),

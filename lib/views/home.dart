@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crime_map/models/place_response.dart';
 import 'package:crime_map/services/crimes_service.dart';
 import 'package:crime_map/services/maps_service.dart';
+import 'package:crime_map/services/users_service.dart';
 import 'package:crime_map/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -60,7 +61,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   _renderCrimes(List<DocumentSnapshot> documents) async {
-    mapCrimeSymbols.clear();
     for (var crime in documents) {
       GeoPoint location = crime.data['location'];
       final symbol = await mapController.addSymbol(
@@ -121,6 +121,20 @@ class _HomePageState extends State<HomePage> {
       key: _scaffoldKey,
       appBar: CAppBar(
         title: "CrimeMap",
+        actions: <Widget>[
+          IconButton(
+            icon: Icon(
+              SimpleLineIcons.logout,
+              size: 20.0,
+              color: Colors.white,
+            ),
+            onPressed: () {
+              usersService.logoutUser().then((value) {
+                Navigator.of(context).pushReplacementNamed("/");
+              });
+            },
+          )
+        ],
         searchbar: _buildSearchBar(),
       ),
       body: SafeArea(child: mapboxMap),
