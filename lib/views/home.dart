@@ -17,6 +17,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<DocumentSnapshot> crimes;
   MapboxMapController mapController;
   CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
@@ -33,30 +34,32 @@ class _HomePageState extends State<HomePage> {
 
   _goToUserPosition() async {
     LocationData _locationData = await Helper.getCurrentPosition();
-    _initialCameraPosition = CameraPosition(
-      target: LatLng(_locationData.latitude, _locationData.longitude),
-      zoom: 14,
-    );
+    if (_locationData != null) {
+      _initialCameraPosition = CameraPosition(
+        target: LatLng(_locationData.latitude, _locationData.longitude),
+        zoom: 8,
+      );
 
-    mapController.animateCamera(
-      CameraUpdate.newCameraPosition(
-        _initialCameraPosition,
-      ),
-    );
-    setState(() {});
+      mapController.animateCamera(
+        CameraUpdate.newCameraPosition(
+          _initialCameraPosition,
+        ),
+      );
+      setState(() {});
+    }
   }
 
   _getCrimes() {
     crimesService.getCrimes().listen((snapshot) async {
-      print("received data");
+      crimes = snapshot.documents;
       _renderCrimes(snapshot.documents);
     });
   }
 
-  _renderCrimes(documents) {
+  _renderCrimes(documents) async {
     for (var crime in documents) {
       GeoPoint location = crime['location'];
-      mapController.addSymbol(
+      await mapController.addSymbol(
         SymbolOptions(
           iconImage: _getMarkerImage(
             crime['report_number'],
@@ -65,6 +68,9 @@ class _HomePageState extends State<HomePage> {
           geometry: LatLng(location?.latitude ?? 0, location?.longitude ?? 0),
           iconSize: 0.1,
         ),
+        {
+          "report_number": crime['report_number'],
+        },
       );
     }
   }
@@ -81,8 +87,18 @@ class _HomePageState extends State<HomePage> {
 
   void onMapCreated(MapboxMapController controller) {
     mapController = controller;
+    mapController.onSymbolTapped.add(_onSymbolTapped);
     _getCrimes();
     // mapController.addListener(_onMapChanged);
+  }
+
+  _onSymbolTapped(Symbol symbol) {
+    print(symbol.data['report_number']);
+    Helper.notify(
+      context,
+      message:
+          "There were ${symbol.data['report_number']} crime(s) reported here.",
+    );
   }
 
   @override
@@ -93,6 +109,7 @@ class _HomePageState extends State<HomePage> {
       initialCameraPosition: _initialCameraPosition,
       trackCameraPosition: true,
       compassEnabled: true,
+      zoomGesturesEnabled: true,
       myLocationEnabled: true,
       myLocationRenderMode: MyLocationRenderMode.GPS,
     );

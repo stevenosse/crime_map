@@ -31,12 +31,12 @@ class CrimesService {
           .document(crime.documentID)
           .setData({
         "report_number": crime.data['report_number'] + 1,
-        "location": GeoPoint(position.latitude, position.longitude)
+        "location": GeoPoint(position.longitude, position.latitude)
       });
     } else {
       firestore.collection(crimesCollection).add({
         "report_number": 1,
-        "location": GeoPoint(position.latitude, position.longitude)
+        "location": GeoPoint(position.longitude, position.latitude)
       });
     }
   }

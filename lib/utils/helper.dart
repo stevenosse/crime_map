@@ -12,15 +12,16 @@ class Helper {
       context: context,
       dialogType: type,
       animType: AnimType.BOTTOMSLIDE,
-      title: "Error",
+      title: type == DialogType.ERROR ? "Error" : "Info",
       desc: message,
+      headerAnimationLoop: false,
       btnOkOnPress: () {},
-      btnOkIcon: Icons.cancel,
-      btnOkColor: Colors.red,
+      btnOkIcon: type == DialogType.ERROR ? Icons.cancel : Icons.check,
+      btnOkColor: type == DialogType.ERROR ? Colors.red : Colors.green,
     )..show();
   }
 
-  static getCurrentPosition() async {
+  static Future<LocationData> getCurrentPosition() async {
     Location location = new Location();
 
     bool _serviceEnabled;
@@ -30,7 +31,7 @@ class Helper {
     if (!_serviceEnabled) {
       _serviceEnabled = await location.requestService();
       if (!_serviceEnabled) {
-        return;
+        return null;
       }
     }
 
@@ -38,7 +39,7 @@ class Helper {
     if (_permissionGranted == PermissionStatus.denied) {
       _permissionGranted = await location.requestPermission();
       if (_permissionGranted != PermissionStatus.granted) {
-        return;
+        return null;
       }
     }
     return await location.getLocation();

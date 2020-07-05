@@ -1,4 +1,5 @@
 import 'package:crime_map/services/crimes_service.dart';
+import 'package:crime_map/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
@@ -113,7 +114,15 @@ class _AddCrimeDialogState extends State<AddCrimeDialog> {
     );
   }
 
-  _useCurrentPosition() {}
+  _useCurrentPosition() async {
+    var locationData = await Helper.getCurrentPosition();
+    position = LatLng(
+      locationData.latitude,
+      locationData.longitude,
+    );
+    var placeInfo = await mapsService.getPlaceFromCoords(position);
+    _placeController.text = placeInfo?.features?.first?.text ?? "";
+  }
 
   _addCrime() {
     try {
