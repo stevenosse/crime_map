@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:crime_map/services/crimes_service.dart';
+import 'package:crime_map/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:crime_map/widgets/c_app_bar.dart';
@@ -15,12 +16,12 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
   MapboxMapController mapController;
   CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14,
   );
-  // Set<Marker> markers = {};
 
   @override
   void initState() {
@@ -31,29 +32,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   _goToUserPosition() async {
-    Location location = new Location();
-
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-    LocationData _locationData;
-
-    _serviceEnabled = await location.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await location.requestService();
-      if (!_serviceEnabled) {
-        return;
-      }
-    }
-
-    _permissionGranted = await location.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await location.requestPermission();
-      if (_permissionGranted != PermissionStatus.granted) {
-        return;
-      }
-    }
-
-    _locationData = await location.getLocation();
+    LocationData _locationData = await Helper.getCurrentPosition();
     _initialCameraPosition = CameraPosition(
       target: LatLng(_locationData.latitude, _locationData.longitude),
       zoom: 14,
@@ -69,6 +48,7 @@ class _HomePageState extends State<HomePage> {
 
   _getCrimes() {
     crimesService.getCrimes().listen((snapshot) async {
+      print("received data");
       _renderCrimes(snapshot.documents);
     });
   }
@@ -76,22 +56,20 @@ class _HomePageState extends State<HomePage> {
   _renderCrimes(documents) {
     for (var crime in documents) {
       GeoPoint location = crime['location'];
-      print(crime);
       mapController.addSymbol(
         SymbolOptions(
           iconImage: _getMarkerImage(
             crime['report_number'],
           ),
           iconOpacity: 1,
-          geometry: LatLng(location.latitude, location.longitude),
+          geometry: LatLng(location?.latitude ?? 0, location?.longitude ?? 0),
           iconSize: 0.1,
         ),
       );
     }
   }
 
-  String _getMarkerImage(String number) {
-    int reportNumber = int.tryParse(number) ?? 0;
+  String _getMarkerImage(int reportNumber) {
     if (reportNumber < 5) {
       return "assets/images/marker-green.png";
     } else if (reportNumber >= 5 && reportNumber < 20) {
@@ -120,6 +98,7 @@ class _HomePageState extends State<HomePage> {
     );
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: CAppBar(
         title: "CrimeMap",
         searchbar: _buildSearchBar(),
@@ -157,6 +136,26 @@ class _HomePageState extends State<HomePage> {
           title: "Add crime",
         );
       },
-    );
+    ).then((crimeAdded) {
+      if (crimeAdded != null) {
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            content: Text(
+              crimeAdded
+                  ? "The crime was added successfully"
+                  : "Sorry, we were not able to save the crime.",
+            ),
+            backgroundColor: crimeAdded ? Colors.green : Colors.red,
+            action: SnackBarAction(
+              label: "OK",
+              textColor: Colors.white,
+              onPressed: () {
+                _scaffoldKey.currentState.hideCurrentSnackBar();
+              },
+            ),
+          ),
+        );
+      }
+    });
   }
 }

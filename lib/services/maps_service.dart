@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:crime_map/models/place_response.dart';
 import 'package:crime_map/utils/constants.dart';
 import 'package:dio/dio.dart';
@@ -16,7 +18,8 @@ class MapsService {
     try {
       Response response = await _dio.get(
           "/geocoding/v5/mapbox.places/$pattern.json?access_token=${Constants.mapboxApiKey}");
-      return PlaceResponse.fromJson(response.data);
+      print(response.data);
+      return PlaceResponse.fromJson(jsonDecode(response.data));
     } catch (e) {
       throw new Exception("Couldn't retrieve data.");
     }

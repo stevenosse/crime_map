@@ -60,13 +60,13 @@ class Features {
     id = json['id'];
     type = json['type'];
     placeType = json['place_type'].cast<String>();
-    relevance = json['relevance'];
+    relevance = double.parse(json['relevance'].toString());
     properties = json['properties'] != null
         ? new Properties.fromJson(json['properties'])
         : null;
     text = json['text'];
     placeName = json['place_name'];
-    bbox = json['bbox'].cast<double>();
+    bbox = json['bbox'] != null ? json['bbox'].cast<double>() : null;
     center = json['center'].cast<double>();
     geometry = json['geometry'] != null
         ? new Geometry.fromJson(json['geometry'])

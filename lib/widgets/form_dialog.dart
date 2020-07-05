@@ -1,8 +1,10 @@
+import 'package:crime_map/services/crimes_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:crime_map/services/maps_service.dart';
 import 'package:crime_map/models/place_response.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class AddCrimeDialog extends StatefulWidget {
   final String title;
@@ -14,6 +16,8 @@ class AddCrimeDialog extends StatefulWidget {
 }
 
 class _AddCrimeDialogState extends State<AddCrimeDialog> {
+  final TextEditingController _placeController = TextEditingController();
+  LatLng position;
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
@@ -24,22 +28,24 @@ class _AddCrimeDialogState extends State<AddCrimeDialog> {
           TypeAheadField(
             textFieldConfiguration: TextFieldConfiguration(
               autofocus: true,
+              controller: _placeController,
               decoration: InputDecoration(
                 helperText: "Tap the button to use your current \n location...",
                 hintText: "Enter a city name...",
                 suffixIcon: IconButton(
                   icon: Icon(
                     Octicons.location,
-                    color: Theme.of(context).primaryColor,
+                    color: Theme.of(context).accentColor,
                   ),
                   tooltip: "Use your current location",
                   onPressed: () {
-                    print("Save crime");
+                    _useCurrentPosition();
                   },
                 ),
               ),
             ),
             suggestionsCallback: (pattern) async {
+              if (pattern.isEmpty) return <Features>[];
               PlaceResponse response = await mapsService.getPlaces(pattern);
               return response.features;
             },
@@ -63,18 +69,26 @@ class _AddCrimeDialogState extends State<AddCrimeDialog> {
               );
             },
             itemBuilder: (context, Features suggestion) {
-              print(suggestion);
               return ListTile(
                 leading: Icon(Octicons.location),
                 title: Text(suggestion.text),
                 subtitle: Text(
-                  suggestion.context
-                      .firstWhere((element) => element.id.contains("country"))
-                      .text,
+                  suggestion?.context
+                          ?.firstWhere((s) => s.id.contains("country"))
+                          ?.text ??
+                      "-",
                 ),
               );
             },
-            onSuggestionSelected: (suggestion) {},
+            onSuggestionSelected: (Features suggestion) {
+              position = LatLng(
+                suggestion.geometry.coordinates.first,
+                suggestion.geometry.coordinates.last,
+              );
+              _placeController.text =
+                  "${suggestion.text}, ${suggestion?.context?.firstWhere((s) => s.id.contains("country"))?.text ?? "-"}";
+              setState(() {});
+            },
           ),
         ],
       ),
@@ -88,12 +102,25 @@ class _AddCrimeDialogState extends State<AddCrimeDialog> {
           icon: Icon(Octicons.x),
         ),
         FlatButton.icon(
-          onPressed: () {},
+          onPressed: () {
+            _addCrime();
+          },
           label: Text("Add"),
           icon: Icon(Octicons.plus),
           textColor: Theme.of(context).accentColor,
         )
       ],
     );
+  }
+
+  _useCurrentPosition() {}
+
+  _addCrime() {
+    try {
+      crimesService.addCrime(position);
+      Navigator.of(context).pop(true);
+    } catch (e) {
+      Navigator.of(context).pop(false);
+    }
   }
 }
