@@ -1,9 +1,12 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crime_map/models/place_response.dart';
 import 'package:crime_map/services/crimes_service.dart';
+import 'package:crime_map/services/maps_service.dart';
 import 'package:crime_map/utils/helper.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:crime_map/widgets/c_app_bar.dart';
 import 'package:location/location.dart';
@@ -135,11 +138,62 @@ class _HomePageState extends State<HomePage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(4.0),
       ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          prefixIcon: Icon(Octicons.search, size: 20, color: Colors.black45),
-          hintText: "Search crimes by location...",
+      child: TypeAheadField(
+        suggestionsCallback: (pattern) async {
+          if (pattern.isEmpty) return <Features>[];
+          PlaceResponse response = await mapsService.getPlaces(pattern);
+          return response.features;
+        },
+        noItemsFoundBuilder: (context) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "No match found",
+              style: TextStyle(fontSize: 12.0, color: Colors.black45),
+            ),
+          );
+        },
+        errorBuilder: (context, error) {
+          print(error);
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              "An error occured.",
+              style: TextStyle(fontSize: 12.0, color: Colors.redAccent),
+            ),
+          );
+        },
+        itemBuilder: (context, Features suggestion) {
+          return ListTile(
+            leading: Icon(Octicons.location),
+            title: Text(suggestion.text),
+            subtitle: Text(
+              suggestion?.context
+                      ?.firstWhere((s) => s.id.contains("country"))
+                      ?.text ??
+                  "-",
+            ),
+          );
+        },
+        onSuggestionSelected: (Features suggestion) {
+          mapController.animateCamera(
+            CameraUpdate.newCameraPosition(
+              CameraPosition(
+                target: LatLng(
+                  suggestion.geometry.coordinates.last,
+                  suggestion.geometry.coordinates.first,
+                ),
+                zoom: 10,
+              ),
+            ),
+          );
+        },
+        textFieldConfiguration: TextFieldConfiguration(
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            prefixIcon: Icon(Octicons.search, size: 20, color: Colors.black45),
+            hintText: "Search crimes by location...",
+          ),
         ),
       ),
     );
