@@ -16,6 +16,7 @@ class CrimeMap extends StatelessWidget {
         accentColor: Color(0XFFff1744),
         fontFamily: "Aileron",
       ),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

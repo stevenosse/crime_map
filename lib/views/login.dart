@@ -57,7 +57,7 @@ class _LoginPageState extends State<LoginPage> {
 
   login() {
     usersService.loginUser().then((user) {
-      print(user);
+      Navigator.of(context).pushNamed("/home");
     }).catchError((e) {
       print(e);
       Helper.notify(
