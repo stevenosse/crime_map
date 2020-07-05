@@ -43,5 +43,8 @@
 	<false/>
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
+	<key>MGLMapboxAccessToken</key>
+	<string>pk.eyJ1Ijoic3RldmVub3NzZSIsImEiOiJjazhoYTg0enMwYTh1M2xwbnZnMnRoOXRmIn0.3GXebA_Uc-VjBhSO7i_Cjw</string>
+
 </dict>
 </plist>

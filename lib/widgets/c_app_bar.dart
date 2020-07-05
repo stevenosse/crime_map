@@ -4,8 +4,9 @@ import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 class CAppBar extends StatelessWidget with PreferredSizeWidget {
   final String title;
+  final Widget searchbar;
 
-  CAppBar({this.title});
+  CAppBar({this.title, this.searchbar});
 
   final double kheight = 120;
   @override
@@ -44,7 +45,7 @@ class CAppBar extends StatelessWidget with PreferredSizeWidget {
                 ),
               ),
               SizedBox(height: kheight * 0.15),
-              _buildSearchBar()
+              if (searchbar != null) searchbar
             ],
           ),
         ),
@@ -54,20 +55,4 @@ class CAppBar extends StatelessWidget with PreferredSizeWidget {
 
   @override
   Size get preferredSize => Size.fromHeight(kheight);
-
-  _buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(4.0),
-      ),
-      child: TextFormField(
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          prefixIcon: Icon(Octicons.search, size: 20, color: Colors.black45),
-          hintText: "Search crimes by location...",
-        ),
-      ),
-    );
-  }
 }

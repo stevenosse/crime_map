@@ -5,6 +5,10 @@ class UsersService {
   final GoogleSignIn _googleSignIn = GoogleSignIn();
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
+  Future<bool> isLoggedIn() async {
+    return await _googleSignIn.isSignedIn();
+  }
+
   Future<FirebaseUser> loginUser() async {
     try {
       final GoogleSignInAccount googleUser = await _googleSignIn.signIn();

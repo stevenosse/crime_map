@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:crime_map/services/crimes_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:crime_map/widgets/c_app_bar.dart';
 import 'package:location/location.dart';
+import 'package:crime_map/widgets/form_dialog.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -12,21 +15,22 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  Completer<GoogleMapController> _controller = Completer();
+  MapboxMapController mapController;
   CameraPosition _initialCameraPosition = CameraPosition(
     target: LatLng(37.42796133580664, -122.085749655962),
     zoom: 14,
   );
+  // Set<Marker> markers = {};
 
   @override
   void initState() {
     Future.delayed(Duration(milliseconds: 10)).then((value) {
-      _getUserPosition();
+      _goToUserPosition();
     });
     super.initState();
   }
 
-  _getUserPosition() async {
+  _goToUserPosition() async {
     Location location = new Location();
 
     bool _serviceEnabled;
@@ -54,9 +58,8 @@ class _HomePageState extends State<HomePage> {
       target: LatLng(_locationData.latitude, _locationData.longitude),
       zoom: 14,
     );
-    final GoogleMapController controller = await _controller.future;
 
-    controller.animateCamera(
+    mapController.animateCamera(
       CameraUpdate.newCameraPosition(
         _initialCameraPosition,
       ),
@@ -64,31 +67,96 @@ class _HomePageState extends State<HomePage> {
     setState(() {});
   }
 
+  _getCrimes() {
+    crimesService.getCrimes().listen((snapshot) async {
+      _renderCrimes(snapshot.documents);
+    });
+  }
+
+  _renderCrimes(documents) {
+    for (var crime in documents) {
+      GeoPoint location = crime['location'];
+      print(crime);
+      mapController.addSymbol(
+        SymbolOptions(
+          iconImage: _getMarkerImage(
+            crime['report_number'],
+          ),
+          iconOpacity: 1,
+          geometry: LatLng(location.latitude, location.longitude),
+          iconSize: 0.1,
+        ),
+      );
+    }
+  }
+
+  String _getMarkerImage(String number) {
+    int reportNumber = int.tryParse(number) ?? 0;
+    if (reportNumber < 5) {
+      return "assets/images/marker-green.png";
+    } else if (reportNumber >= 5 && reportNumber < 20) {
+      return "assets/images/marker-orange.png";
+    } else {
+      return "assets/images/marker-red.png";
+    }
+  }
+
+  void onMapCreated(MapboxMapController controller) {
+    mapController = controller;
+    _getCrimes();
+    // mapController.addListener(_onMapChanged);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final MapboxMap mapboxMap = MapboxMap(
+      // accessToken: Constants.mapboxApiKey,
+      onMapCreated: onMapCreated,
+      initialCameraPosition: _initialCameraPosition,
+      trackCameraPosition: true,
+      compassEnabled: true,
+      myLocationEnabled: true,
+      myLocationRenderMode: MyLocationRenderMode.GPS,
+    );
+
     return Scaffold(
       appBar: CAppBar(
         title: "CrimeMap",
+        searchbar: _buildSearchBar(),
       ),
-      body: SafeArea(
-        child: GoogleMap(
-          mapType: MapType.normal,
-          initialCameraPosition: _initialCameraPosition,
-          onMapCreated: (GoogleMapController controller) {
-            _controller.complete(controller);
-          },
-        ),
-      ),
+      body: SafeArea(child: mapboxMap),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _goToTheLake,
+        onPressed: _showAddCrimeDialog,
         label: Text("Add crime"),
         icon: Icon(Ionicons.ios_add),
       ),
     );
   }
 
-  Future<void> _goToTheLake() async {
-    final GoogleMapController controller = await _controller.future;
-    // controller.animateCamera(CameraUpdate.newCameraPosition(HomePage._kLake));
+  _buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(4.0),
+      ),
+      child: TextFormField(
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: Icon(Octicons.search, size: 20, color: Colors.black45),
+          hintText: "Search crimes by location...",
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddCrimeDialog() async {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AddCrimeDialog(
+          title: "Add crime",
+        );
+      },
+    );
   }
 }

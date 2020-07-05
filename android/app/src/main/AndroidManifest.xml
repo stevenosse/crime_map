@@ -10,6 +10,7 @@
         android:label="crime_map"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.google.android.geo.API_KEY" android:value="AIzaSyAYJNGc6SKFOuOKZhMK7R6gNE7OyHrfDx4"/>
+        <meta-data android:name="com.mapbox.token" android:value="pk.eyJ1Ijoic3RldmVub3NzZSIsImEiOiJjazhoYTg0enMwYTh1M2xwbnZnMnRoOXRmIn0.3GXebA_Uc-VjBhSO7i_Cjw" />
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"

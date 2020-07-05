@@ -2,7 +2,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:crime_map/utils/helper.dart';
 import 'package:flutter/material.dart';
 import 'package:crime_map/services/users_service.dart';
-import 'package:crime_map/utils/helper.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -10,6 +9,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  @override
+  initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 10)).then((value) async {
+      if (await usersService.isLoggedIn()) {
+        Navigator.of(context).pushReplacementNamed("/home");
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final Size size = MediaQuery.of(context).size;
@@ -57,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
 
   login() {
     usersService.loginUser().then((user) {
-      Navigator.of(context).pushNamed("/home");
+      Navigator.of(context).pushReplacementNamed("/home");
     }).catchError((e) {
       print(e);
       Helper.notify(
