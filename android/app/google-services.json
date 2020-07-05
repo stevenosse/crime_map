@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "475488839125",
+    "firebase_url": "https://crimemap-589de.firebaseio.com",
+    "project_id": "crimemap-589de",
+    "storage_bucket": "crimemap-589de.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475488839125:android:de009f9363b5817a62895c",
+        "android_client_info": {
+          "package_name": "com.example.crime_map"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "475488839125-1766dlo19k05mjh7s6dn3rdicije0seh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.crime_map",
+            "certificate_hash": "0e15b92617b225fb9634684b2ff03729be053402"
+          }
+        },
+        {
+          "client_id": "475488839125-82i7vbb0ileogl2gkvho3dndro7ec60j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCs_Sa91C4dzbP3OOY-6cyDuRQfj0D6xcI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "475488839125-82i7vbb0ileogl2gkvho3dndro7ec60j.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
