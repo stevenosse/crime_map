@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 class CAppBar extends StatelessWidget with PreferredSizeWidget {
   final String title;
